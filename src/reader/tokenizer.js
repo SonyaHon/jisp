@@ -19,6 +19,22 @@ const Tokens = {
     name: "ListClose",
     pattern: /\)/,
   }),
+  QuoteNext: createToken({
+    name: "QuoteNext",
+    pattern: /'/,
+  }),
+  QuasiQuoteNext: createToken({
+    name: "QuasiQuoteNext",
+    pattern: /`/,
+  }),
+  SpliceUnquoteNext: createToken({
+    name: "SpliceUnquoteNext",
+    pattern: /~@/,
+  }),
+  UnquoteNext: createToken({
+    name: "UnquoteNext",
+    pattern: /~/,
+  }),
   Nil: createToken({
     name: "Nil",
     pattern: /nil/,

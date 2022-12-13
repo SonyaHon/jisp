@@ -3,6 +3,41 @@ const { isEmbeddedJavascript } = require("../extends/embedded-javascript");
 const { Context } = require("../context");
 const AsyncFunction = async function () {}.constructor;
 
+function quasiquote(ast) {
+  if (Array.isArray(ast)) {
+    if (ast[0] === Symbol.for("unquote")) {
+      return ast[1];
+    }
+    let result = [];
+    for (let x = ast.length - 1; x >= 0; x--) {
+      const elt = ast[x];
+      if (Array.isArray(elt) && elt[0] === Symbol.for("splice-unquote")) {
+        result = [Symbol.for("concat"), elt[1], result];
+      } else {
+        result = [Symbol.for("cons"), quasiquote(elt), result];
+      }
+    }
+    return result;
+  }
+  return [Symbol.for("quote"), ast];
+}
+
+function isMacroCall(form, context) {
+  return (
+    Array.isArray(form) &&
+    typeof form[0] === "symbol" &&
+    context.get(form[0])?.isMacro === true
+  );
+}
+
+async function macroExpand(form, context) {
+  while (isMacroCall(form, context)) {
+    const fn = context.get(form[0]);
+    form = await fn(...form.slice(1));
+  }
+  return form;
+}
+
 async function evaluateForm(form, context) {
   while (true) {
     if (Array.isArray(form)) {
@@ -10,7 +45,16 @@ async function evaluateForm(form, context) {
         return form;
       }
 
+      form = await macroExpand(form, context);
+      if (!Array.isArray(form)) {
+        return form;
+      }
+
       const maybeSpecialForm = form[0];
+
+      if (maybeSpecialForm === Symbol.for("macroexpand")) {
+        return await macroExpand(await evaluateForm(form[1], context), context);
+      }
 
       if (maybeSpecialForm === Symbol.for("def!")) {
         const key = form[1];
@@ -19,6 +63,18 @@ async function evaluateForm(form, context) {
         }
         const value = form[2];
         const evaluatedValue = await evaluateForm(value, context);
+        context.set(key, evaluatedValue);
+        return evaluatedValue;
+      }
+
+      if (maybeSpecialForm === Symbol.for("defmacro!")) {
+        const key = form[1];
+        if (typeof key !== "symbol" || isKeyword(key)) {
+          throw new Error("First argument of a do form must be a symbol");
+        }
+        const value = form[2];
+        const evaluatedValue = await evaluateForm(value, context);
+        evaluatedValue.isMacro = true;
         context.set(key, evaluatedValue);
         return evaluatedValue;
       }
@@ -75,7 +131,19 @@ async function evaluateForm(form, context) {
         };
       }
 
+      if (maybeSpecialForm === Symbol.for("quote")) {
+        return form[1];
+      }
+
+      if (maybeSpecialForm === Symbol.for("quasiquote")) {
+        form = quasiquote(form[1]);
+        continue;
+      }
+
       const evaluatedList = await evaluateItem(form, context);
+      if (typeof evaluatedList[0] !== "function") {
+        throw new Error(`${String(form[0])} is not referencing a function`);
+      }
       return await evaluatedList[0](...evaluatedList.slice(1));
     }
     return await evaluateItem(form, context);

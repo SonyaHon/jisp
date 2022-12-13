@@ -66,6 +66,26 @@ class JISPParser extends EmbeddedActionsParser {
             result = $.SUBRULE($.map);
           },
         },
+        {
+          ALT: () => {
+            result = $.SUBRULE($.quoteNext);
+          },
+        },
+        {
+          ALT: () => {
+            result = $.SUBRULE($.quasiQuoteNext);
+          },
+        },
+        {
+          ALT: () => {
+            result = $.SUBRULE($.spliceUnquoteNext);
+          },
+        },
+        {
+          ALT: () => {
+            result = $.SUBRULE($.unquoteNext);
+          },
+        },
       ]);
       return result;
     });
@@ -150,6 +170,30 @@ class JISPParser extends EmbeddedActionsParser {
       });
       $.CONSUME(Tokens.MapClose);
       return Object.fromEntries(entries);
+    });
+
+    $.RULE("quoteNext", () => {
+      $.CONSUME(Tokens.QuoteNext);
+      const nextForm = $.SUBRULE($.parse);
+      return [Symbol.for("quote"), nextForm];
+    });
+
+    $.RULE("quasiQuoteNext", () => {
+      $.CONSUME(Tokens.QuasiQuoteNext);
+      const nextForm = $.SUBRULE($.parse);
+      return [Symbol.for("quasiquote"), nextForm];
+    });
+
+    $.RULE("unquoteNext", () => {
+      $.CONSUME(Tokens.UnquoteNext);
+      const nextForm = $.SUBRULE($.parse);
+      return [Symbol.for("unquote"), nextForm];
+    });
+
+    $.RULE("spliceUnquoteNext", () => {
+      $.CONSUME(Tokens.SpliceUnquoteNext);
+      const nextForm = $.SUBRULE($.parse);
+      return [Symbol.for("splice-unquote"), nextForm];
     });
 
     this.performSelfAnalysis();
