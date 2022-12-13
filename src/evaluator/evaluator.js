@@ -124,9 +124,19 @@ async function evaluateForm(form, context) {
         const bindings = form[1];
         const body = form[2];
         return async function (...args) {
-          bindings.forEach((binding, index) => {
-            nContext.set(binding, args[index]);
-          });
+          for (let i = 0; i < bindings.length; i++) {
+            const binding = bindings[i];
+            if (binding.description.startsWith("$__collapse_rest__$")) {
+              nContext.set(
+                Symbol.for(binding.description.substring(19)),
+                args.slice(i)
+              );
+              break;
+            } else {
+              nContext.set(binding, args[i]);
+            }
+          }
+
           return await evaluateForm(body, nContext);
         };
       }

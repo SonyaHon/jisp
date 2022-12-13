@@ -86,6 +86,11 @@ class JISPParser extends EmbeddedActionsParser {
             result = $.SUBRULE($.unquoteNext);
           },
         },
+        {
+          ALT: () => {
+            result = $.SUBRULE($.collapseRest);
+          },
+        },
       ]);
       return result;
     });
@@ -194,6 +199,12 @@ class JISPParser extends EmbeddedActionsParser {
       $.CONSUME(Tokens.SpliceUnquoteNext);
       const nextForm = $.SUBRULE($.parse);
       return [Symbol.for("splice-unquote"), nextForm];
+    });
+
+    $.RULE("collapseRest", () => {
+      $.CONSUME(Tokens.CollapseRest);
+      const data = $.CONSUME(Tokens.Symbol).image;
+      return Symbol.for(`$__collapse_rest__$${data}`);
     });
 
     this.performSelfAnalysis();

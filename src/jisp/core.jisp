@@ -1,5 +1,14 @@
+(defmacro! defun 
+  (fn* (name bindings & body)
+      `(def! ~name (fn* ~bindings 
+          (do ~@body)))))
+
 (def! + #js{
  return ~@.reduce((a, b) => a + b, 0);
+})
+
+(def! - #js{
+ return ~@.slice(1).reduce((a, b) => a + b, ~@[0]);
 })
 
 (def! println #js{

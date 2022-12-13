@@ -31,6 +31,10 @@ const Tokens = {
     name: "SpliceUnquoteNext",
     pattern: /~@/,
   }),
+  CollapseRest: createToken({
+    name: "CollapseRest",
+    pattern: /&/,
+  }),
   UnquoteNext: createToken({
     name: "UnquoteNext",
     pattern: /~/,
