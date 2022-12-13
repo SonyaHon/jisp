@@ -1,0 +1,23 @@
+{
+  "name": "jisp",
+  "version": "0.0.0",
+  "description": "JISP is a LISP that uses JavaScript as its host platform",
+  "main": "index.js",
+  "license": "MIT",
+  "bin": "./bin.js",
+  "scripts": {
+    "repl": "node ./src/start-repl.js"
+  },
+  "dependencies": {
+    "@babel/core": "^7.20.5",
+    "babel-loader": "^9.1.0",
+    "chevrotain": "^10.4.2",
+    "jison": "^0.4.18",
+    "js-code-generator": "^1.0.1",
+    "lodash": "^4.17.21",
+    "memfs": "^3.4.12",
+    "tokenizer": "^1.1.2",
+    "webpack": "^5.75.0",
+    "yargs": "^17.6.2"
+  }
+}

@@ -1,0 +1,8 @@
+(def! + #js{
+ return ~@.reduce((a, b) => a + b, 0);
+})
+
+(def! println #js{
+  console.log(...~@);
+  return null;
+})
