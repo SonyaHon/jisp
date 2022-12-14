@@ -70,6 +70,12 @@ async function evaluateForm(form, context) {
         form[0] = value;
       }
 
+      if (maybeSpecialForm === Symbol.for(".")) {
+        const prop = form[1].description;
+        const obj = await evaluateForm(form[2], context);
+        return obj[prop];
+      }
+
       if (maybeSpecialForm === Symbol.for("macroexpand")) {
         return await macroExpand(await evaluateForm(form[1], context), context);
       }
