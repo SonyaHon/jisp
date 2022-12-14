@@ -1,7 +1,12 @@
-const { isKeyword } = require("../extends/keyword");
+const { isKeyword, keywordFor } = require("../extends/keyword");
 const { isEmbeddedJavascript } = require("../extends/embedded-javascript");
 const { Context } = require("../context");
+const { read } = require("../reader");
+
 const AsyncFunction = async function () {}.constructor;
+
+let fs;
+fs = require("node:fs/promises");
 
 function quasiquote(ast) {
   if (Array.isArray(ast)) {
@@ -52,8 +57,55 @@ async function evaluateForm(form, context) {
 
       const maybeSpecialForm = form[0];
 
+      if (
+        typeof maybeSpecialForm === "symbol" &&
+        maybeSpecialForm.description.includes("/")
+      ) {
+        symbols = maybeSpecialForm.description
+          .split("/")
+          .map((part) => Symbol.for(part));
+        const ctx = await (await evaluateItem(symbols[0], context))();
+        const value = await evaluateItem(symbols[1], ctx);
+
+        form[0] = value;
+      }
+
       if (maybeSpecialForm === Symbol.for("macroexpand")) {
         return await macroExpand(await evaluateForm(form[1], context), context);
+      }
+
+      if (maybeSpecialForm === Symbol.for("import")) {
+        const importClauses = form.slice(1);
+
+        for (const importClause of importClauses) {
+          const [filePath, kw, bindingsOrBinding] = importClause;
+          console.debug(context);
+          const nsContext = new Context(context.parentContext);
+
+          await evaluateForm(
+            read(`(do ${await fs.readFile(filePath)} nil)`),
+            nsContext
+          );
+          if (keywordFor(kw, ":as")) {
+            context.set(bindingsOrBinding, async () => nsContext);
+          } else if (keywordFor(kw, ":refer")) {
+            for (const binding of bindingsOrBinding) {
+              context.set(binding, nsContext.get(binding));
+            }
+          } else {
+            throw new Error("Only :as or :refer are usable in import form");
+          }
+        }
+        return null;
+      }
+
+      if (maybeSpecialForm === Symbol.for("use")) {
+        const path = form[1];
+        await evaluateForm(
+          read(`(do ${await fs.readFile(path)} nil)`),
+          context
+        );
+        return null;
       }
 
       if (maybeSpecialForm === Symbol.for("def!")) {

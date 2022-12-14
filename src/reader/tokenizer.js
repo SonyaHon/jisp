@@ -81,7 +81,7 @@ const Tokens = {
   }),
   Symbol: createToken({
     name: "Symbol",
-    pattern: /[-\w$?+/*!><|&\.]+/,
+    pattern: /[-\w$?+/*!><|&\.\/]+/,
   }),
 };
 

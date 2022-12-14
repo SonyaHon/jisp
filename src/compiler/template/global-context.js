@@ -29,6 +29,4 @@ globalContext.set(Symbol.for("cons"), async (arg, array) => {
   return array;
 });
 
-module.exports = async () => {
-  return globalContext;
-};
+module.exports = globalContext;

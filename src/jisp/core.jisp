@@ -3,6 +3,14 @@
       `(def! ~name (fn* ~bindings 
           (do ~@body)))))
 
+(defmacro! comment 
+  (fn* (& args)
+    nil))
+
+(defun load-file (path)
+  (eval (read-string (str "(do " (slurp path) " nil)"))))
+
+;; Javascrip interop
 (def! + #js{
  return ~@.reduce((a, b) => a + b, 0);
 })

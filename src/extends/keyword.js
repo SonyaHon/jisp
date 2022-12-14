@@ -4,6 +4,11 @@ function isKeyword(data) {
   );
 }
 
+function keywordFor(data, keyword) {
+  return data === Symbol.for(`$__keyword__$${keyword}`);
+}
+
 module.exports = {
   isKeyword,
+  keywordFor,
 };

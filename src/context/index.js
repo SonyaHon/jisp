@@ -22,6 +22,14 @@ class Context {
     }
     return item;
   }
+
+  copyStorage(anotherContext) {
+    for (const binding of Object.getOwnPropertySymbols(
+      anotherContext.storage
+    )) {
+      this.storage[binding] = anotherContext.storage[binding];
+    }
+  }
 }
 
 module.exports = {
