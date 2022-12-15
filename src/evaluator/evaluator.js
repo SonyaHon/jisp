@@ -59,9 +59,7 @@ async function evaluateForm(form, context) {
 
       if (
         typeof maybeSpecialForm === "symbol" &&
-        maybeSpecialForm.description.match(
-          /.+\/.+/
-        )
+        maybeSpecialForm.description.match(/.+\/.+/)
       ) {
         symbols = maybeSpecialForm.description
           .split("/")
@@ -118,12 +116,28 @@ async function evaluateForm(form, context) {
       if (maybeSpecialForm === Symbol.for("def!")) {
         const key = form[1];
         if (typeof key !== "symbol" || isKeyword(key)) {
-          throw new Error("First argument of a def! form must be a symbol, got", form);
+          throw new Error(
+            "First argument of a def! form must be a symbol, got",
+            form
+          );
         }
         const value = form[2];
         const evaluatedValue = await evaluateForm(value, context);
         context.set(key, evaluatedValue);
         return evaluatedValue;
+      }
+
+      if (maybeSpecialForm === Symbol.for("multi-fun")) {
+        const overloads = form.slice(1);
+        const variants = {};
+        for (const overload of overloads) {
+          const overloadArity = overload[1].length;
+          const overloadValue = await evaluateForm(overload, context);
+          variants[overloadArity] = overloadValue;
+        }
+        return async function(...args) {
+          return await variants[args.length](...args);
+        };
       }
 
       if (maybeSpecialForm === Symbol.for("defmacro!")) {
@@ -233,7 +247,7 @@ async function evaluateItem(form, context) {
       if (isEmbeddedJavascript(form)) {
         return new AsyncFunction(form.getJsCode()).bind(context);
       }
-      if (form === null || !form[Symbol.for('@@jisp-map@@')]) {
+      if (form === null || !form[Symbol.for("@@jisp-map@@")]) {
         return form;
       }
 
