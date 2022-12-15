@@ -59,7 +59,9 @@ async function evaluateForm(form, context) {
 
       if (
         typeof maybeSpecialForm === "symbol" &&
-        maybeSpecialForm.description.includes("/")
+        maybeSpecialForm.description.match(
+          /.+\/.+/
+        )
       ) {
         symbols = maybeSpecialForm.description
           .split("/")
@@ -85,7 +87,6 @@ async function evaluateForm(form, context) {
 
         for (const importClause of importClauses) {
           const [filePath, kw, bindingsOrBinding] = importClause;
-          console.debug(context);
           const nsContext = new Context(context.parentContext);
 
           await evaluateForm(
@@ -117,7 +118,7 @@ async function evaluateForm(form, context) {
       if (maybeSpecialForm === Symbol.for("def!")) {
         const key = form[1];
         if (typeof key !== "symbol" || isKeyword(key)) {
-          throw new Error("First argument of a do form must be a symbol");
+          throw new Error("First argument of a def! form must be a symbol, got", form);
         }
         const value = form[2];
         const evaluatedValue = await evaluateForm(value, context);
