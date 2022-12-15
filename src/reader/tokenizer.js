@@ -53,7 +53,7 @@ const Tokens = {
   }),
   DecimalNumber: createToken({
     name: "DecimalNumber",
-    pattern: /\d+\.\d+|\.\d+|([1-9]\d*)|0/,
+    pattern: /[-+]?\d+\.\d+|\.\d+|[-+]?([1-9]\d*)|[-+]?0/,
   }),
   EmbeddedJavaScript: createToken({
     name: "EmbeddedJavascript",
@@ -81,7 +81,7 @@ const Tokens = {
   }),
   Symbol: createToken({
     name: "Symbol",
-    pattern: /[^:][-\w$?+/*!><|&\.\/%:]*/,
+    pattern: /[^:][-\w$?+/*!><|&\.\/%:=]*/,
   }),
 };
 

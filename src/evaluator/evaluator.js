@@ -230,12 +230,11 @@ async function evaluateItem(form, context) {
 
   switch (typeof form) {
     case "object":
-      if (form === null) {
-        return form;
-      }
-
       if (isEmbeddedJavascript(form)) {
         return new AsyncFunction(form.getJsCode()).bind(context);
+      }
+      if (form === null || !form[Symbol.for('@@jisp-map@@')]) {
+        return form;
       }
 
       const entries = [];
