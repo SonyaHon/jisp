@@ -7,6 +7,24 @@
   (fn* (& args)
     nil))
 
+(defun recurse-state (obj keys state)
+  (if (empty? keys)
+    state
+    (recurse-state obj 
+                   (rest keys)
+                   (concat state 
+                           (list (list 'def! 
+                                 (symbol (first keys))
+                                 (list '. (symbol (first keys)) obj)))))))
+
+(defmacro! bind-js
+  (fn* (js-form)
+    (let* (dt ((eval js-form))
+           obj (. obj dt)
+           keys (. keys dt)
+           forms (recurse-state obj keys '()))
+      `(do ~@forms nil))))
+
 (defun load-file (path)
   (eval (read-string (str "(do " (slurp path) " nil)"))))
 
@@ -35,3 +53,36 @@
   console.log(...~@);
   return null;
 })
+
+(def! list #js{
+  return [...~@];
+})
+
+(def! count #js{
+  return @0.length;
+})
+
+(def! == #js{
+  return @0 == @1;
+})
+
+(def! === #js{
+  return @0 === @1;
+})
+
+(defun empty? (coll)
+  (=== 0 (count coll)))
+
+(def! first #js{
+  return @0[0];
+})
+
+(def! rest #js{
+  return @0.slice(1);
+})
+
+(def! symbol #js{
+  return Symbol.for(@0);
+})
+
+(bind-js #js{ return { obj: Math, keys: Object.getOwnPropertyNames(Math) }; })

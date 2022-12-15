@@ -28,7 +28,7 @@ class JISPParser extends EmbeddedActionsParser {
         },
         {
           ALT: () => {
-            result = $.SUBRULE($.symbol);
+            result = $.SUBRULE($.decimalNumber);
           },
         },
         {
@@ -38,7 +38,7 @@ class JISPParser extends EmbeddedActionsParser {
         },
         {
           ALT: () => {
-            result = $.SUBRULE($.decimalNumber);
+            result = $.SUBRULE($.symbol);
           },
         },
         {
@@ -174,7 +174,13 @@ class JISPParser extends EmbeddedActionsParser {
         entries.push([key, value]);
       });
       $.CONSUME(Tokens.MapClose);
-      return Object.fromEntries(entries);
+      const obj = Object.fromEntries(entries);
+      Object.defineProperty(obj, Symbol.for("@@jisp-map@@"), {
+        enumerable: false,
+        writable: false,
+        value: true,
+      });
+      return obj;
     });
 
     $.RULE("quoteNext", () => {
